@@ -1,5 +1,7 @@
 import albumentations as A
 import cv2
+import pickle
+import numpy as np
 
 def imgaug():
     return [
@@ -37,3 +39,27 @@ def imgaug():
         A.RGBShift(p=0.3),
         A.RandomShadow(p=0.2)
     ]
+
+def read_pickle(path):
+    with open(path, 'rb') as  file:
+        dct = pickle.load(file=file)
+    file.close()
+    return dct
+
+def save_pickle(dct, path):
+    with open(path, 'wb') as  file:
+        pickle.dump(obj=dct, file=file, protocol=pickle.HIGHEST_PROTOCOL)
+
+def draw_point(img, data):
+
+    center = (int(data[1]), int(data[2]))
+    wh = (int(data[3]), int(data[4]))
+    angle = data[-1]
+
+    img = cv2.circle(img, center, 10, (255, 0, 0), -1)
+    
+    box = cv2.boxPoints((center, wh, angle))
+    box = np.array(box).astype(np.uint)
+    img = cv2.drawContours(img,[box],0,(0,255,0),2)
+
+    return img
