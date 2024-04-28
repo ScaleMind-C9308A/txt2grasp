@@ -19,8 +19,6 @@ def imgaug():
             A.MedianBlur(blur_limit=3, p=0.3),
             A.Blur(blur_limit=3, p=0.3),
         ], p=0.2),
-        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.12, rotate_limit=0, p=0.5,
-                          border_mode = cv2.BORDER_CONSTANT),
         A.OneOf([
             A.OpticalDistortion(p=0.3),
             A.GridDistortion(p=0.3),

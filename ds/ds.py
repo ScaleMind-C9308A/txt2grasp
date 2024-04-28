@@ -22,14 +22,15 @@ class GAT(Dataset):
             self.part = 'seen'
         else:
             self.part = 'unseen'
+
+        self.aug = A.Compose(imgaug(), p = 0.9, bbox_params=A.BboxParams(format='yolo'))
+        self.res = A.Compose([A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
         
         self.dir = root + f"/{self.part}"
 
         self.inss = glob(self.dir + "/grasp_instructions/*")
         self.lbls = [self.dir + f"/grasp_label/{os.path.basename(x).replace('.pkl', '')}.pt" for x in self.inss]
         self.imgs = [self.dir + f"/image/{os.path.basename(x).split('_')[0]}.jpg" for x in self.inss]
-
-
 
         self.vocab_path = CURR + "/vocab.pkl"
         if not os.path.exists(self.vocab_path):
@@ -45,8 +46,7 @@ class GAT(Dataset):
         self.eos_idx = self.vocab['<eos>']
 
         self.tokenizer = get_tokenizer("basic_english")
-        
-
+    
     def __len__(self):
         return len(self.inss)
 
@@ -60,9 +60,17 @@ class GAT(Dataset):
         x, y, w, h, a = self.lblproc(lbl_path)
         ins = read_pickle(ins_path)
 
+        if self.tr and self.aug:
+            aug_transformed = self.aug(image=img)
+            transformed = self.res(image = aug_transformed['image'])
+            transformed_image = transformed['image']
+        else:
+            transformed = self.res(image=img)
+            transformed_image = transformed['image']
+
         tokens = torch.tensor([self.vocab[token] for token in self.tokenizer(ins)], dtype=torch.long)
         
-        img = torch.from_numpy(img).permute(-1, 0, 1).float()
+        img = torch.from_numpy(transformed_image).permute(-1, 0, 1).float()
         lbl = torch.from_numpy(np.array([x/W, y/W, w/W, h/W, a/180])).float()
 
         return img, lbl, tokens
