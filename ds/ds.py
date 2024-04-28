@@ -2,15 +2,13 @@ from torch.utils.data import Dataset, DataLoader
 from .utils import imgaug, read_pickle
 from glob import glob
 from torch.nn.utils.rnn import pad_sequence
+from torchtext.data.utils import get_tokenizer
 
 import os
 import albumentations as A
 import cv2
 import torch
-import torchtext
 import numpy as np
-torchtext.disable_torchtext_deprecation_warning()
-from torchtext.data.utils import get_tokenizer
 
 
 CURR = "/".join(__file__.split("/")[:-1])

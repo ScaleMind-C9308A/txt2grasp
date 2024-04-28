@@ -1,5 +1,3 @@
-import torchtext
-torchtext.disable_torchtext_deprecation_warning()
 from glob import glob
 from alive_progress import alive_it
 from utils import read_pickle, save_pickle, draw_point, build_vocab
@@ -9,7 +7,6 @@ from statistics import mean
 import cv2
 import os
 import torch
-import copy
 
 def gather_data(data_dir):
     imgs = glob(data_dir + "/image/*")

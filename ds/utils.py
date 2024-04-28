@@ -1,6 +1,4 @@
 from collections import Counter
-import torchtext
-torchtext.disable_torchtext_deprecation_warning()
 from torchtext.vocab import vocab, Vocab
 from alive_progress import alive_it
 
@@ -8,7 +6,6 @@ import albumentations as A
 import cv2
 import pickle
 import numpy as np
-import io
 
 def imgaug():
     return [
