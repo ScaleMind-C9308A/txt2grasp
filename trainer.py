@@ -21,8 +21,6 @@ def trainer(args):
     else:
         device = torch.device("cpu")
 
-    args.device = device
-
     args, train_ld, valid_ld = get_data(args)
 
     print(f"#TRAIN Batch: {len(train_ld)}")
