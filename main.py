@@ -23,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--imgenc', type=str, default='resnet18', help='img encoder')
     parser.add_argument('--dec', type=str, default='basev0', help='decoder')
     parser.add_argument('--lr', type=float, default=0.001, help='lr')
+    parser.add_argument('--log', action='store_true', help='wandb logging')
 
     # gpt2
     parser.add_argument('--bls', type=int, default=16, help='blocksize')

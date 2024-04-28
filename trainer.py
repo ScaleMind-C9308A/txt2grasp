@@ -3,11 +3,13 @@ from method import get_method
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from alive_progress import alive_it
+from metrics import probiou
 
 import torch
 import wandb
 import json
 import hashlib
+import os
 
 def get_hash(args):
     args_str = json.dumps(vars(args), sort_keys=True)
@@ -26,13 +28,27 @@ def trainer(args):
     print(f"#TRAIN Batch: {len(train_ld)}")
     print(f"#VALID Batch: {len(valid_ld)}")
 
-    run = wandb.init(
-        project='grasp',
-        entity='truelove',
-        config=args,
-        name=get_hash(args),
-        force=True
-    )
+    run_name = get_hash(args)
+
+    if args.log:
+        run = wandb.init(
+            project='grasp',
+            entity='truelove',
+            config=args,
+            name=run_name,
+            force=True
+        )
+    
+    run_dir = os.getcwd() + '/runs'
+    if not os.path.exists(run_dir):
+        os.mkdir(run_dir)
+    
+    sv_dir = run_dir + f"/{run_name}"
+    if not os.path.exists(sv_dir):
+        os.mkdir(sv_dir)
+    
+    best_model_path = sv_dir + f'/best.pt'
+    last_model_path = sv_dir + f'/last.pt'
 
     model = get_method(args).to(device)
 
@@ -44,6 +60,8 @@ def trainer(args):
     optimizer = Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, len(train_ld) * args.epoch)
 
+
+    old_valid_loss = 1e26
     for epoch in range(args.epoch):
         log_dict = {}
         
@@ -54,7 +72,7 @@ def trainer(args):
             txt = txt.to(device)
             lbl = lbl.to(device)
 
-            loss = model(img, txt, lbl)
+            loss, _ = model(img, txt, lbl)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -64,7 +82,9 @@ def trainer(args):
             total_loss += loss.item()
         
         train_mean_loss = total_loss / len(train_ld)
+        
         log_dict['train/loss'] = train_mean_loss
+
         print(f"Epoch: {epoch} - Train Loss: {train_mean_loss}")
 
         model.eval()
@@ -75,11 +95,22 @@ def trainer(args):
                 txt = txt.to(device)
                 lbl = lbl.to(device)
 
-                loss = model(img, txt, lbl)
+                loss, _ = model(img, txt, lbl)
                 total_loss += loss.item()
         
-        valid_mean_loss = total_loss / len(train_ld)
+        valid_mean_loss = total_loss / len(valid_ld)
         log_dict['valid/loss'] = valid_mean_loss
         print(f"Epoch: {epoch} - Valid Loss: {valid_mean_loss}")
 
-        run.log(log_dict)
+        if valid_mean_loss < old_valid_loss:
+            old_valid_loss = valid_mean_loss
+
+            save_dict = {
+                'args' : args,
+                'model_state_dict': model.state_dict()
+            }
+            torch.save(save_dict, best_model_path)
+        torch.save(save_dict, last_model_path)
+
+        if args.log:
+            run.log(log_dict)

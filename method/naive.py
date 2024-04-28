@@ -23,4 +23,4 @@ class Naive(nn.Module):
 
         output = self.decoder(latent)
 
-        return F.mse_loss(output, target)
+        return F.mse_loss(output, target), output
