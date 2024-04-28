@@ -102,13 +102,14 @@ def trainer(args):
         log_dict['valid/loss'] = valid_mean_loss
         print(f"Epoch: {epoch} - Valid Loss: {valid_mean_loss}")
 
+        save_dict = {
+            'args' : args,
+            'model_state_dict': model.state_dict()
+        }
+
         if valid_mean_loss < old_valid_loss:
             old_valid_loss = valid_mean_loss
-
-            save_dict = {
-                'args' : args,
-                'model_state_dict': model.state_dict()
-            }
+            
             torch.save(save_dict, best_model_path)
         torch.save(save_dict, last_model_path)
 
