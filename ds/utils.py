@@ -1,7 +1,14 @@
+from collections import Counter
+import torchtext
+torchtext.disable_torchtext_deprecation_warning()
+from torchtext.vocab import vocab, Vocab
+from alive_progress import alive_it
+
 import albumentations as A
 import cv2
 import pickle
 import numpy as np
+import io
 
 def imgaug():
     return [
@@ -15,12 +22,11 @@ def imgaug():
             A.MedianBlur(blur_limit=3, p=0.3),
             A.Blur(blur_limit=3, p=0.3),
         ], p=0.2),
-        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.12, rotate_limit=15, p=0.5,
+        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.12, rotate_limit=0, p=0.5,
                           border_mode = cv2.BORDER_CONSTANT),
         A.OneOf([
             A.OpticalDistortion(p=0.3),
             A.GridDistortion(p=0.3),
-            A.PiecewiseAffine(p=0.3),
         ], p=0.2),
         A.OneOf([
             A.CLAHE(clip_limit=2),
@@ -63,3 +69,15 @@ def draw_point(img, data):
     img = cv2.drawContours(img,[box],0,(0,255,0),2)
 
     return img
+
+def build_vocab(tokens, tokenizer):
+    counter = Counter()
+    for string_ in alive_it(tokens):
+        counter.update(tokenizer(string_))
+    base_vocab = vocab(
+        ordered_dict = counter, 
+        specials=['<unk>', '<pad>', '<bos>', '<eos>'],
+        min_freq = 2, 
+    )
+    base_vocab.set_default_index(base_vocab['<unk>'])
+    return Vocab(base_vocab)
