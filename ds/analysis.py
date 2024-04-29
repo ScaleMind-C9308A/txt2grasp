@@ -1,6 +1,6 @@
 from glob import glob
 from alive_progress import alive_it
-from utils import read_pickle, save_pickle, draw_point, build_vocab
+from utils import read_pickle, save_pickle, draw_point, build_vocab, getmask
 from torchtext.data.utils import get_tokenizer
 from statistics import mean
 
@@ -74,13 +74,16 @@ if __name__ == "__main__":
         ext_data = data[quality.argmax()].tolist()
         print(f"IDX: {idx} - QLY: {ext_data[0]} - CENTER: ({ext_data[1]}, {ext_data[2]}) - W/H: {ext_data[3]}, {ext_data[4]} - AN: {ext_data[-1]}")
         img = draw_point(img, ext_data)
+        mask = getmask(img, ext_data)
+
+        sdr_img_path = "/".join(__file__.split("/")[:-1]) + f"/sample_{idx}.jpg"
+        cv2.imwrite(sdr_img_path, img)
+        sdr_msk_path = "/".join(__file__.split("/")[:-1]) + f"/mask_{idx}.jpg"
+        cv2.imwrite(sdr_msk_path, mask)
     
     for idx, sample_ins in enumerate(sample_inss):
         ins = read_pickle(sample_ins)
         print(f"IDX: {idx} - INS: {ins}")
-    
-    sdr_img_path = "/".join(__file__.split("/")[:-1]) + "/sample.jpg"
-    cv2.imwrite(sdr_img_path, img)
 
     tokenizer = get_tokenizer("basic_english")
     utidct = {**train_dct, **valid_dct}

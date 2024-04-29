@@ -9,7 +9,8 @@ class Basev0(nn.Module):
             nn.Linear(1024, 256),
             nn.ReLU(),
             nn.BatchNorm1d(256),
-            nn.Linear(256, 5)
+            nn.Linear(256, 5),
+            nn.Sigmoid()
         )
     
     def forward(self, x):

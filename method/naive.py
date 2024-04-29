@@ -27,10 +27,20 @@ class Naive(nn.Module):
             torch.normal(mean=1, std=sigma1, out=alpha)
 
             beta = torch.rand_like(latent).to(latent.device)
-            sigma2 = self.args.sig2 * torch.ones(alpha.size()).to(latent.device)
+            sigma2 = self.args.sig2 * torch.ones(beta.size()).to(latent.device)
             torch.normal(mean=0, std=sigma2, out=beta)
 
             latent = alpha * latent + beta
+
+        output = self.decoder(latent)
+
+        return F.mse_loss(output, target), output
+
+    def predict(self, img, txt, target):
+        img_vector = self.img_enc(img)
+        txt_vector = self.txt_enc(txt)
+
+        latent = torch.cat([img_vector, txt_vector], dim=1)
 
         output = self.decoder(latent)
 

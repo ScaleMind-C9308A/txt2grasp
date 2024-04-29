@@ -65,6 +65,26 @@ def draw_point(img, data):
 
     return img
 
+def getmask(img, data):
+
+    center = (int(data[1]), int(data[2]))
+    wh = (int(data[3]), int(data[4]))
+    angle = data[-1]
+
+    mask = np.zeros(img.shape)
+
+    box = cv2.boxPoints((center, wh, angle))
+    box = np.array(box).astype(np.uint)
+    mask = cv2.drawContours(mask,[box],0,(255,255,255),-1)
+
+    return mask[:, :, 0]
+
+def get_mask_norm(img, data):
+    mask: np.array = getmask(img, data)
+    mask = mask / 255
+    mask = mask.astype(np.uint)
+    return mask
+
 def build_vocab(tokens, tokenizer):
     counter = Counter()
     for string_ in alive_it(tokens):
