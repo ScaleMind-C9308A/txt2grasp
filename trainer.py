@@ -128,5 +128,7 @@ def trainer(args):
 
         if args.log:
             run.log(log_dict)
-            run.log_model(path=best_model_path, name=f'{run_name}-best-model')
-            run.log_model(path=last_model_path, name=f'{run_name}-last-model')
+    
+    if args.log:
+        run.log_model(path=best_model_path, name=f'{run_name}-best-model')
+        run.log_model(path=last_model_path, name=f'{run_name}-last-model')
