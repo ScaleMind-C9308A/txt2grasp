@@ -5,6 +5,7 @@ from alive_progress import alive_it
 import wandb
 import argparse
 import torch
+import os
 
 def output_decode(x):
     x[:-1] *= 419
@@ -17,16 +18,21 @@ if __name__ == "__main__":
 
     parser.add_argument('--run', type=str, required=True)
     parser.add_argument('--name', type=str, required=True)
+    parser.add_argument('--set', type=str, required=True)
 
     args = parser.parse_args()
 
     api = wandb.Api()
     run = api.run(f"truelove/grasp/{args.run}")
     artifact = run.use_artifact(api.artifact(f"truelove/grasp/{args.name}"))
+
+    mode = args.name.split('-')[1]
     
     downloaded_model_path = artifact.download()
+    model_path = downloaded_model_path + f"/{mode}.pt"
 
-    data = torch.load(downloaded_model_path + "/last.pt")
+    data = torch.load(model_path)
+    print(f'load model :{model_path}')
 
     args = data['args']
     args.bs = 1 # inference
@@ -41,10 +47,15 @@ if __name__ == "__main__":
     else:
         device = torch.device("cpu")
 
+    loader = train_ld if args.set == 'train' else valid_ld
+
+    sv_dir = downloaded_model_path + f"/{mode}/{args.set}"
+    os.makedirs(sv_dir, exist_ok=True)
+
     model = get_method(args).to(device)
     model.eval()
     with torch.no_grad():
-        for img, txt, lbl in alive_it(valid_ld):
+        for idx, (img, txt, lbl) in alive_it(enumerate(loader)):
             img = img.to(device)
             txt = txt.to(device)
             lbl = lbl.to(device)
@@ -54,4 +65,3 @@ if __name__ == "__main__":
             output = output_decode(output[0])
             label = output_decode(lbl[0])
 
-            print(output, label)
