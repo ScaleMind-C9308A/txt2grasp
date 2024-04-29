@@ -67,12 +67,14 @@ def trainer(args):
         
         model.train()
         total_loss = 0
+        total_iou = 0
         for img, txt, lbl in alive_it(train_ld):
             img = img.to(device)
             txt = txt.to(device)
             lbl = lbl.to(device)
 
-            loss, _ = model(img, txt, lbl)
+            loss, output = model(img, txt, lbl)
+            iou = probiou(output, lbl)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -80,27 +82,38 @@ def trainer(args):
             scheduler.step()
             
             total_loss += loss.item()
+            total_iou += iou.item()
         
         train_mean_loss = total_loss / len(train_ld)
+        train_miou = total_iou / len(train_ld)
         
         log_dict['train/loss'] = train_mean_loss
+        log_dict['train/miou'] = train_miou
 
-        print(f"Epoch: {epoch} - Train Loss: {train_mean_loss}")
+        print(f"Epoch: {epoch} - Train Loss: {train_mean_loss} - Train mIoU: {train_miou}")
 
         model.eval()
         with torch.no_grad():
             total_loss = 0
+            total_iou = 0
             for img, txt, lbl in alive_it(valid_ld):
                 img = img.to(device)
                 txt = txt.to(device)
                 lbl = lbl.to(device)
 
-                loss, _ = model(img, txt, lbl)
+                loss, output = model(img, txt, lbl)
+                iou = probiou(output, lbl)
+
                 total_loss += loss.item()
+                total_iou += iou.item()
         
         valid_mean_loss = total_loss / len(valid_ld)
+        valid_miou = total_iou / len(valid_ld)
+
         log_dict['valid/loss'] = valid_mean_loss
-        print(f"Epoch: {epoch} - Valid Loss: {valid_mean_loss}")
+        log_dict['valid/miou'] = valid_miou
+
+        print(f"Epoch: {epoch} - Valid Loss: {valid_mean_loss} - Valid mIoU: {valid_miou}")
 
         save_dict = {
             'args' : args,
