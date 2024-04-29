@@ -23,7 +23,7 @@ class GAT(Dataset):
         else:
             self.part = 'unseen'
 
-        self.augt = A.Compose(imgaug(), p = 0.9, bbox_params=A.BboxParams(format='yolo'))
+        self.augt = A.Compose(imgaug(), p = 0.9)
         self.res = A.Compose([A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
         
         self.dir = root + f"/{self.part}"
