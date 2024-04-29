@@ -23,7 +23,7 @@ class GAT(Dataset):
         else:
             self.part = 'unseen'
 
-        self.aug = A.Compose(imgaug(), p = 0.9, bbox_params=A.BboxParams(format='yolo'))
+        self.augt = A.Compose(imgaug(), p = 0.9, bbox_params=A.BboxParams(format='yolo'))
         self.res = A.Compose([A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
         
         self.dir = root + f"/{self.part}"
@@ -61,7 +61,7 @@ class GAT(Dataset):
         ins = read_pickle(ins_path)
 
         if self.tr and self.aug:
-            aug_transformed = self.aug(image=img)
+            aug_transformed = self.augt(image=img)
             transformed = self.res(image = aug_transformed['image'])
             transformed_image = transformed['image']
         else:
