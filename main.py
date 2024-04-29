@@ -31,6 +31,11 @@ if __name__ == "__main__":
     parser.add_argument('--nh', type=int, default=8, help='#heads')
     parser.add_argument('--ne', type=int, default=512, help='embedding size')
 
+    # fa
+    parser.add_argument('--fa', action='store_true', help='use feature augmentation')
+    parser.add_argument('--sig1', type=float, default=0.5, help='first variance')
+    parser.add_argument('--sig2', type=float, default=1, help='second variance')
+
     # imgencoder
     parser.add_argument('--w', action='store_true', help='using ImageNet pretrained weight')
 
