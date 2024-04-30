@@ -1,11 +1,21 @@
-from ds import get_data
+from ds import get_data, draw_point, draw_rec
 from method import get_method
 from alive_progress import alive_it
+from torchvision import transforms
 
 import wandb
 import argparse
 import torch
 import os
+import numpy as np
+import cv2
+
+invnorm = transforms.Compose(
+    [
+        transforms.Normalize(mean = [0., 0., 0.], std = [1/0.5, 1/0.5, 1/0.5]),
+        transforms.Normalize(mean = [-0.5, -0.5, -0.5], std = [1., 1., 1.]),
+    ]
+)
 
 def output_decode(x):
     x[:-1] *= 419
@@ -27,6 +37,7 @@ if __name__ == "__main__":
     artifact = run.use_artifact(api.artifact(f"truelove/grasp/{args.name}"))
 
     mode = args.name.split('-')[1]
+    set = args.set
     
     downloaded_model_path = artifact.download()
     model_path = downloaded_model_path + f"/{mode}.pt"
@@ -47,9 +58,9 @@ if __name__ == "__main__":
     else:
         device = torch.device("cpu")
 
-    loader = train_ld if args.set == 'train' else valid_ld
+    loader = train_ld if set == 'train' else valid_ld
 
-    sv_dir = downloaded_model_path + f"/{mode}/{args.set}"
+    sv_dir = downloaded_model_path + f"/{mode}/{set}"
     os.makedirs(sv_dir, exist_ok=True)
 
     model = get_method(args).to(device)
@@ -65,3 +76,15 @@ if __name__ == "__main__":
             output = output_decode(output[0])
             label = output_decode(lbl[0])
 
+            output = [round(x) for x in output]
+            label = [round(x) for x in label]
+
+            img_np = invnorm(img[0]).permute(1, -1, 0).cpu().numpy()
+            image = np.ascontiguousarray(img_np, dtype=np.uint8)
+
+            print(output, label)
+
+            img_draw_label = draw_rec(image, label, (0, 0, 255))
+            img_draw_output = draw_rec(img_draw_label, output, (0, 255, 0))
+
+            cv2.imwrite(sv_dir + f"/{idx}.jpg", img_draw_output)

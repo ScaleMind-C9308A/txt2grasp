@@ -65,6 +65,19 @@ def draw_point(img, data):
 
     return img
 
+def draw_rec(img, data, color):
+
+    center = (int(data[1]), int(data[2]))
+    wh = (int(data[3]), int(data[4]))
+    angle = data[-1]
+    
+    box = cv2.boxPoints((center, wh, angle))
+    box = np.array(box).astype(np.uint)
+    img = cv2.drawContours(img,[box],0,color,2)
+
+    return img
+
+
 def getmask(img, data):
 
     center = (int(data[1]), int(data[2]))
