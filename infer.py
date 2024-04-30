@@ -18,7 +18,7 @@ invnorm = transforms.Compose(
 )
 
 def output_decode(x):
-    x[:-1] *= 419
+    x[:-1] *= 416
     x[-1] *= 180
 
     return x.tolist()
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     model = get_method(args).to(device)
     model.eval()
     with torch.no_grad():
-        for idx, (img, txt, lbl) in alive_it(enumerate(loader)):
+        for idx, (img, txt, lbl, path) in alive_it(enumerate(loader)):
             img = img.to(device)
             txt = txt.to(device)
             lbl = lbl.to(device)
@@ -79,12 +79,12 @@ if __name__ == "__main__":
             output = [round(x) for x in output]
             label = [round(x) for x in label]
 
-            img_np = invnorm(img[0]).permute(1, -1, 0).cpu().numpy()
-            image = np.ascontiguousarray(img_np, dtype=np.uint8)
+            path = path[0]
+            name = os.path.basename(path)
 
-            print(output, label)
+            img_np = cv2.imread(path)
 
-            img_draw_label = draw_rec(image, label, (0, 0, 255))
+            img_draw_label = draw_rec(img_np, label, (0, 0, 255))
             img_draw_output = draw_rec(img_draw_label, output, (0, 255, 0))
 
-            cv2.imwrite(sv_dir + f"/{idx}.jpg", img_draw_output)
+            cv2.imwrite(sv_dir + f"/{name}", img_draw_output)

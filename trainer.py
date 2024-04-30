@@ -68,7 +68,7 @@ def trainer(args):
         model.train()
         total_loss = 0
         total_iou = 0
-        for img, txt, lbl in alive_it(train_ld):
+        for img, txt, lbl, _ in alive_it(train_ld):
             img = img.to(device)
             txt = txt.to(device)
             lbl = lbl.to(device)
@@ -96,7 +96,7 @@ def trainer(args):
         with torch.no_grad():
             total_loss = 0
             total_iou = 0
-            for img, txt, lbl in alive_it(valid_ld):
+            for img, txt, lbl, _ in alive_it(valid_ld):
                 img = img.to(device)
                 txt = txt.to(device)
                 lbl = lbl.to(device)

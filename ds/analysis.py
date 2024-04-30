@@ -59,7 +59,7 @@ if __name__ == "__main__":
     print(f"TRAIN OBJECT - MAX: {max(train_obj)} - MIN: {min(train_obj)}")
     print(f"VALID OBJECT - MAX: {max(valid_obj)} - MIN: {min(valid_obj)}")
 
-    sample_sha = '0a5db147a485709d4a8eec80837d8bf9b30a87eebdfe2e40668d0b1ea84541c5'
+    sample_sha = 'ff21cc58b6ab0c48c77914c1d6c7c6572a76b130609bf8b9fcae46ae19ef7af1'
     sample_img = train_dir + f"/image/{sample_sha}.jpg"
     sample_lbls = sorted(train_dct[sample_sha]['label'])
     sample_inss = sorted(train_dct[sample_sha]['ins'])

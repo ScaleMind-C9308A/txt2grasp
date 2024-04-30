@@ -73,7 +73,7 @@ class GAT(Dataset):
         img = torch.from_numpy(transformed_image).permute(-1, 0, 1).float()
         lbl = torch.from_numpy(np.array([x/W, y/W, w/W, h/W, a/180])).float()
 
-        return img, lbl, tokens
+        return img, lbl, tokens, img_path
 
     @staticmethod
     def lblproc(path):
@@ -103,14 +103,16 @@ def get_data(args):
         tok_batch = []
         lbl_batch = []
         img_batch = []
-        for (img, lbl, tok) in data_batch:
+        pth_batch = []
+        for (img, lbl, tok, path) in data_batch:
             tok_batch.append(torch.cat([torch.tensor([BOS_IDX]), tok, torch.tensor([EOS_IDX])], dim=0))
             img_batch.append(img)
             lbl_batch.append(lbl)
+            pth_batch.append(path)
         tok_batch = pad_sequence(tok_batch, padding_value=PAD_IDX).T
         img_batch = torch.stack(img_batch)
         lbl_batch = torch.stack(lbl_batch)
-        return img_batch, tok_batch, lbl_batch 
+        return img_batch, tok_batch, lbl_batch, pth_batch
 
     train_ld = DataLoader(train_ds, batch_size=args.bs, shuffle=True, collate_fn=generate_batch, pin_memory=args.pm)
     valid_ld = DataLoader(valid_ds, batch_size=args.bs, shuffle=True, collate_fn=generate_batch, pin_memory=args.pm)
